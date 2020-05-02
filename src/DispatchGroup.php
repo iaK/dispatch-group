@@ -97,7 +97,7 @@ class DispatchGroup
      */
     protected function getRedisConnection()
     {
-        $connection = config('horizon')
+        $connection = class_exists(\Laravel\Horizon\HorizonServiceProvider::class)
             ? 'horizon'
             : 'default';
 

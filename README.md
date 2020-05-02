@@ -1,6 +1,6 @@
-## Dispatch_group()
+## Laravel Dispatch_group
 
-Have you ever wanted to push some jobs to the queue, and run some code when they all finished?
+Have you ever wanted to push some jobs to the Laravel queue, and run some code when they all finished?
 
 Then this is the package you've been looking for!
 

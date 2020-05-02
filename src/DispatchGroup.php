@@ -3,12 +3,9 @@
 namespace Iak\DispatchGroup;
 
 use Illuminate\Bus\Queueable;
-use Iak\DispatchGroup\JobWrapper;
-use Iak\DispatchGroup\Dispatchable;
-use Illuminate\Support\Facades\Redis;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
-
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Redis;
 
 class DispatchGroup
 {
@@ -66,14 +63,14 @@ class DispatchGroup
     /**
      * Wether the job should be dispatched async or not.
      *
-     * @var boolean
+     * @var bool
      */
     protected $async = true;
 
     /**
      * Wether the job has been dispatched or not.
      *
-     * @var boolean
+     * @var bool
      */
     protected $dispatched = false;
 
@@ -84,10 +81,14 @@ class DispatchGroup
     {
         $this->jobs = $jobs;
         $this->redis = $this->getRedisConnection();
-        $this->onSuccessCallback = function () {};
-        $this->onFailureCallback = function () {};
-        $this->iterateCallback = function () {};
-        $this->finallyCallback = function () {};
+        $this->onSuccessCallback = function () {
+        };
+        $this->onFailureCallback = function () {
+        };
+        $this->iterateCallback = function () {
+        };
+        $this->finallyCallback = function () {
+        };
     }
 
     /**
@@ -151,14 +152,15 @@ class DispatchGroup
      *
      * @return void
      */
-    protected function runIterateCallback() {
+    protected function runIterateCallback()
+    {
         ($this->iterateCallback)();
     }
 
     /**
      * Wether all jobs has completed or not.
      *
-     * @return boolean
+     * @return bool
      */
     public function allJobsCompleted()
     {
@@ -284,7 +286,7 @@ class DispatchGroup
     /**
      * Set wether the job should be dispatched async or not.
      *
-     * @param boolean $async
+     * @param bool $async
      * @return self
      */
     public function async($async)

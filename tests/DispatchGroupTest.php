@@ -2,13 +2,12 @@
 
 namespace Iak\DispatchGroup\Tests;
 
-use Mockery;
-use Iak\DispatchGroup\Tests\Mocks\DummyJob;
 use Iak\DispatchGroup\DispatchGroup;
-use Iak\DispatchGroup\Tests\TestCase;
+use Iak\DispatchGroup\Tests\Mocks\DummyJob;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Facades\Artisan;
+use Mockery;
 
 class DispatchGroupTest extends TestCase
 {
@@ -65,7 +64,7 @@ class DispatchGroupTest extends TestCase
     {
         $dispatchGroup = new DispatchGroup([
             (new DummyJob)->fail(),
-            new DummyJob
+            new DummyJob,
         ]);
         $dispatchGroup
             ->iterate(fn () => Artisan::call('queue:work --once'))
@@ -81,7 +80,7 @@ class DispatchGroupTest extends TestCase
     {
         $dispatchGroup = new DispatchGroup([
             (new DummyJob('fails'))->fail(),
-            new DummyJob
+            new DummyJob,
         ]);
         $dispatchGroup
             ->iterate(fn () => Artisan::call('queue:work --once'))
@@ -97,7 +96,7 @@ class DispatchGroupTest extends TestCase
     {
         $dispatchGroup = new DispatchGroup([
             (new DummyJob)->fail(),
-            new DummyJob
+            new DummyJob,
         ]);
         $dispatchGroup
             ->iterate(fn () => Artisan::call('queue:work --once'))
@@ -113,7 +112,7 @@ class DispatchGroupTest extends TestCase
     {
         $dispatchGroup = new DispatchGroup([
             new DummyJob,
-            new DummyJob
+            new DummyJob,
         ]);
         $dispatchGroup
             ->iterate(fn () => Artisan::call('queue:work --once'))
@@ -129,7 +128,7 @@ class DispatchGroupTest extends TestCase
     {
         $dispatchGroup = new DispatchGroup([
             new DummyJob,
-            new DummyJob
+            new DummyJob,
         ]);
         $dispatchGroup
             ->iterate(fn () => Artisan::call('queue:work --once'))
@@ -145,7 +144,7 @@ class DispatchGroupTest extends TestCase
     {
         $dispatchGroup = new DispatchGroup([
             (new DummyJob)->fail(),
-            new DummyJob
+            new DummyJob,
         ]);
         $dispatchGroup
             ->iterate(fn () => Artisan::call('queue:work --once'))

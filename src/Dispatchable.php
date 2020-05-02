@@ -2,7 +2,6 @@
 
 namespace Iak\DispatchGroup;
 
-use Iak\DispatchGroup\PendingDispatch;
 use Illuminate\Contracts\Bus\Dispatcher;
 
 trait Dispatchable

@@ -303,11 +303,11 @@ class DispatchGroup
      */
     public function dispatch()
     {
+        $this->dispatched = true;
+
         $this->async
             ? dispatch($this)
             : dispatch_now($this);
-
-        $this->dispatched = true;
     }
 
     /**
@@ -321,8 +321,6 @@ class DispatchGroup
             return;
         }
 
-        $this->async
-            ? $this->dispatch()
-            : $this->dispatchNow();
+        $this->dispatch();
     }
 }

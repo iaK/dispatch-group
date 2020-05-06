@@ -116,7 +116,7 @@ class DispatchGroup
     /**
      * Wether the app uses horizon or not.
      *
-     * @return boolean
+     * @return bool
      */
     protected function isUsingHorizon()
     {

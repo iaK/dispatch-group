@@ -3,10 +3,11 @@
 namespace Iak\DispatchGroup;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Redis;
+use Opis\Closure\SerializableClosure;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
 class DispatchGroup implements ShouldQueue
 {
@@ -85,19 +86,20 @@ class DispatchGroup implements ShouldQueue
     /**
      * Create a new DispatchGroup Instance.
      */
-    public function __construct($jobs)
+    public function __construct($jobs, $async = true)
     {
         $this->jobs = $jobs;
+        $this->async = $async;
         $this->redis = $this->getRedisConnection();
         $this->groupQueue = $this->getDefaultQueue();
-        $this->onSuccessCallback = function () {
+
+        $dummyClosure = function () {
         };
-        $this->onFailureCallback = function () {
-        };
-        $this->iterateCallback = function () {
-        };
-        $this->finallyCallback = function () {
-        };
+
+        $this->then($dummyClosure)
+            ->catch($dummyClosure)
+            ->finally($dummyClosure)
+            ->iterate($dummyClosure);
     }
 
     /**
@@ -187,7 +189,7 @@ class DispatchGroup implements ShouldQueue
      */
     protected function runIterateCallback()
     {
-        ($this->iterateCallback)();
+        return ($this->iterateCallback)();
     }
 
     /**
@@ -267,12 +269,14 @@ class DispatchGroup implements ShouldQueue
     /**
      * The success callback that should be called if all jobs finished successfully.
      *
-     * @param callable $callback
+     * @param \Closure $callback
      * @return self
      */
     public function then($callback)
     {
-        $this->onSuccessCallback = $callback;
+        $this->onSuccessCallback = $this->async
+            ? new SerializableClosure($callback)
+            : $callback;
 
         return $this;
     }
@@ -280,12 +284,14 @@ class DispatchGroup implements ShouldQueue
     /**
      * The failure callback that should be called if one or more jobs failed.
      *
-     * @param callable $callback
+     * @param \Closure $callback
      * @return self
      */
     public function catch($callback)
     {
-        $this->onFailureCallback = $callback;
+        $this->onFailureCallback = $this->async
+            ? new SerializableClosure($callback)
+            : $callback;
 
         return $this;
     }
@@ -293,12 +299,14 @@ class DispatchGroup implements ShouldQueue
     /**
      * The callback to be run when all jobs has completed, successfully or not.
      *
-     * @param callable $callback
+     * @param \Closure $callback
      * @return self
      */
     public function finally($callback)
     {
-        $this->finallyCallback = $callback;
+        $this->finallyCallback = $this->async
+            ? new SerializableClosure($callback)
+            : $callback;
 
         return $this;
     }
@@ -306,25 +314,14 @@ class DispatchGroup implements ShouldQueue
     /**
      * The iterate callback that is called each time the jobs statuses is checked.
      *
-     * @param callable $callback
+     * @param \Closure $callback
      * @return self
      */
     public function iterate($callback)
     {
-        $this->iterateCallback = $callback;
-
-        return $this;
-    }
-
-    /**
-     * Set wether the job should be dispatched async or not.
-     *
-     * @param bool $async
-     * @return self
-     */
-    public function async($async)
-    {
-        $this->async = $async;
+        $this->iterateCallback = $this->async
+            ? new SerializableClosure($callback)
+            : $callback;
 
         return $this;
     }

@@ -32,12 +32,10 @@ class DispatchGroupTest extends TestCase
         $this->assertEquals($job->id, $dispatchGroupMock->getIds()[0]);
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_can_use_any_queue()
     {
-        $dispatchGroupMock = $this->getMock()->toQueue('test');
+        $dispatchGroupMock = $this->getMock()->groupQueue('test');
 
         dispatch_now($dispatchGroupMock);
 
@@ -170,20 +168,19 @@ class DispatchGroupTest extends TestCase
     }
 
     /** @test */
-    public function it_can_be_dispatch_itself_synchronously()
+    public function it_can_dispatch_itself_synchronously()
     {
-        $dispatchGroup = new DispatchGroup([new DummyJob]);
+        $dispatchGroup = new DispatchGroup([new DummyJob], false);
         $dispatchGroup
             ->iterate(fn () => Artisan::call('queue:work --once'))
             ->finally(fn () => Cache::put('finally', 'Done !'))
-            ->async(true)
             ->dispatch();
 
         $this->assertEquals('Done !', Cache::get('finally'));
     }
 
     /** @test */
-    public function it_can_be_dispatch_itself_asynchronously()
+    public function it_can_dispatch_itself_asynchronously()
     {
         $dispatchGroup = new DispatchGroup([new DummyJob]);
         $dispatchGroup

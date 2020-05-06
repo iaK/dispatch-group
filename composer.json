@@ -14,7 +14,8 @@
         "role": "Developer"
     }],
     "require": {
-        "php": "^7.4"
+        "php": "^7.4",
+        "opis/closure": "^3.5"
     },
     "require-dev": {
         "laravel/horizon": "^4.3",

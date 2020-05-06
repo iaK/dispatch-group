@@ -3,11 +3,12 @@
 namespace Iak\DispatchGroup;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Redis;
 
-class DispatchGroup
+class DispatchGroup implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -72,7 +73,7 @@ class DispatchGroup
      *
      * @var string
      */
-    protected $toQueue = '';
+    protected $groupQueue = '';
 
     /**
      * Wether the job has been dispatched or not.
@@ -88,7 +89,7 @@ class DispatchGroup
     {
         $this->jobs = $jobs;
         $this->redis = $this->getRedisConnection();
-        $this->queue = $this->getDefaultQueue();
+        $this->groupQueue = $this->getDefaultQueue();
         $this->onSuccessCallback = function () {
         };
         $this->onFailureCallback = function () {
@@ -130,7 +131,7 @@ class DispatchGroup
      */
     protected function getDefaultQueue()
     {
-        $this->isUsingHorizon()
+        return $this->isUsingHorizon()
             ? 'default'
             : config('queue.connections.redis.queue');
     }
@@ -145,7 +146,7 @@ class DispatchGroup
     {
         $this->dispatchedJobs = collect($this->jobs)
             ->mapWithKeys(function ($job) {
-                $job->onQueue($this->toQueue);
+                $job->onQueue($this->groupQueue);
 
                 return [(new JobWrapper())->dispatch($job)() => $job];
             });
@@ -196,7 +197,7 @@ class DispatchGroup
      */
     public function allJobsCompleted()
     {
-        $allJobs = Redis::lrange('queues:' . $this->queue, 0, -1);
+        $allJobs = Redis::lrange('queues:' . $this->groupQueue, 0, -1);
 
         $ids = $this->dispatchedJobs->keys();
 
@@ -348,9 +349,9 @@ class DispatchGroup
      * @param string $queue
      * @return self
      */
-    public function toQueue($queue)
+    public function groupQueue($queue)
     {
-        $this->toQueue = $queue;
+        $this->groupQueue = $queue;
 
         return $this;
     }

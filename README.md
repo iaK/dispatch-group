@@ -1,8 +1,6 @@
-## Laravel Dispatch_group
+## Laravel dispatch-group
 
-Have you ever wanted to push some jobs to the Laravel queue, and run some code when they all finished?
-
-Then this is the package you've been looking for!
+Run code when a group of queued jobs has completed, successfully or not.
 
 Inspired by javascript's Promise.all(), this package provides a similar API to run code when your jobs have completed.
 
@@ -11,13 +9,13 @@ Example:
 ```php
 dispatch_group([new FirstJob(), new SecondJob()])
     ->then(fn () => User::admin()->notifySuccess())
-    ->catch(fn () => User::admin()->notifyFailure())
-    ->finally(fn () => User::admin()->notifyJobsCompleted());
+    ->catch(fn ($failedJobs) => User::admin()->notifyFailure($failedJobs))
+    ->finally(fn () => User::admin()->notifyCompleted());
 ```
 
 ### Compability.
 
-This package only supports the redis queue driver and only works with the default queue.
+This package only supports the redis queue driver.
 
 It works both with and without Laravel horizon.
 
@@ -47,7 +45,6 @@ dispatch_group_now([new FirstJob(), new SecondJob()])
     ->catch(fn () => User::admin()->notifyFailure())
     ->then(fn () => User::admin()->notifyJobsCompleted());
 ```
-
 
 ### API
 

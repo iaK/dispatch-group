@@ -23,9 +23,8 @@ class JobWrapper implements ShouldQueue
      *
      * @param mixed $wrappedJob
      */
-    public function __construct($wrappedJob)
+    public function __construct()
     {
-        $this->wrappedJob = $wrappedJob;
     }
 
     /**

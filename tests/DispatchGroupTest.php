@@ -27,7 +27,21 @@ class DispatchGroupTest extends TestCase
 
         dispatch_now($dispatchGroupMock);
 
-        $job = json_decode($this->getDefaultQueue()[0]);
+        $job = json_decode($this->getQueue()[0]);
+
+        $this->assertEquals($job->id, $dispatchGroupMock->getIds()[0]);
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_use_any_queue()
+    {
+        $dispatchGroupMock = $this->getMock()->toQueue('test');
+
+        dispatch_now($dispatchGroupMock);
+
+        $job = json_decode($this->getQueue('test')[0]);
 
         $this->assertEquals($job->id, $dispatchGroupMock->getIds()[0]);
     }
@@ -39,7 +53,7 @@ class DispatchGroupTest extends TestCase
 
         dispatch_now($dispatchGroupMock);
 
-        $jobIds = collect($this->getDefaultQueue())
+        $jobIds = collect($this->getQueue())
             ->map(fn ($job) => json_decode($job))
             ->pluck('id');
 
@@ -217,8 +231,8 @@ class DispatchGroupTest extends TestCase
         });
     }
 
-    protected function getDefaultQueue()
+    protected function getQueue($queue = 'default')
     {
-        return Redis::lrange('queues:default', 0, -1);
+        return Redis::lrange('queues:' . $queue, 0, -1);
     }
 }

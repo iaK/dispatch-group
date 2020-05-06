@@ -68,6 +68,13 @@ class DispatchGroup
     protected $async = true;
 
     /**
+     * Which queue the jobs should be queued in.
+     *
+     * @var string
+     */
+    protected $toQueue = '';
+
+    /**
      * Wether the job has been dispatched or not.
      *
      * @var bool
@@ -81,6 +88,7 @@ class DispatchGroup
     {
         $this->jobs = $jobs;
         $this->redis = $this->getRedisConnection();
+        $this->queue = $this->getDefaultQueue();
         $this->onSuccessCallback = function () {
         };
         $this->onFailureCallback = function () {
@@ -98,11 +106,33 @@ class DispatchGroup
      */
     protected function getRedisConnection()
     {
-        $connection = class_exists(\Laravel\Horizon\HorizonServiceProvider::class)
+        $connection = $this->isUsingHorizon()
             ? 'horizon'
             : 'default';
 
         return Redis::resolve($connection);
+    }
+
+    /**
+     * Wether the app uses horizon or not.
+     *
+     * @return boolean
+     */
+    protected function isUsingHorizon()
+    {
+        return class_exists(\Laravel\Horizon\HorizonServiceProvider::class);
+    }
+
+    /**
+     * Gets the default queue.
+     *
+     * @return string
+     */
+    protected function getDefaultQueue()
+    {
+        $this->isUsingHorizon()
+            ? 'default'
+            : config('queue.connections.redis.queue');
     }
 
     /**
@@ -115,7 +145,9 @@ class DispatchGroup
     {
         $this->dispatchedJobs = collect($this->jobs)
             ->mapWithKeys(function ($job) {
-                return [JobWrapper::dispatch($job)() => $job];
+                $job->onQueue($this->toQueue);
+
+                return [(new JobWrapper())->dispatch($job)() => $job];
             });
 
         $this->waitUntilComplete();
@@ -164,7 +196,7 @@ class DispatchGroup
      */
     public function allJobsCompleted()
     {
-        $allJobs = Redis::lrange('queues:default', 0, -1);
+        $allJobs = Redis::lrange('queues:' . $this->queue, 0, -1);
 
         $ids = $this->dispatchedJobs->keys();
 
@@ -308,6 +340,19 @@ class DispatchGroup
         $this->async
             ? dispatch($this)
             : dispatch_now($this);
+    }
+
+    /**
+     * Set which queue the jobs should be queued in.
+     *
+     * @param string $queue
+     * @return self
+     */
+    public function toQueue($queue)
+    {
+        $this->toQueue = $queue;
+
+        return $this;
     }
 
     /**

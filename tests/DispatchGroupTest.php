@@ -21,6 +21,10 @@ class DispatchGroupTest extends TestCase
             ->pipe(fn ($keys) => $keys->count() && Redis::del($keys->toArray()));
     }
 
+    public function tearDown() :void
+    {
+    }
+
     /** @test */
     public function it_can_queue_a_job()
     {

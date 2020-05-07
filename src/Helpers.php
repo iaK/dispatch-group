@@ -12,6 +12,6 @@ if (! function_exists('dispatch_group')) {
 if (! function_exists('dispatch_group_now')) {
     function dispatch_group_now($jobs)
     {
-        return new DispatchGroup($jobs ,false);
+        return new DispatchGroup($jobs, false);
     }
 }

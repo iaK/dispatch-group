@@ -2,13 +2,13 @@
 
 namespace Iak\DispatchGroup\Tests;
 
-use Mockery;
 use Iak\DispatchGroup\DispatchGroup;
+use Iak\DispatchGroup\Tests\Mocks\DummyJob;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Redis;
-use Illuminate\Support\Facades\Artisan;
-use Iak\DispatchGroup\Tests\Mocks\DummyJob;
+use Mockery;
 
 class DispatchGroupTest extends TestCase
 {

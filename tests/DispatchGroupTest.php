@@ -2,12 +2,13 @@
 
 namespace Iak\DispatchGroup\Tests;
 
-use Iak\DispatchGroup\DispatchGroup;
-use Iak\DispatchGroup\Tests\Mocks\DummyJob;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Redis;
 use Mockery;
+use Iak\DispatchGroup\DispatchGroup;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Artisan;
+use Iak\DispatchGroup\Tests\Mocks\DummyJob;
 
 class DispatchGroupTest extends TestCase
 {
@@ -170,51 +171,44 @@ class DispatchGroupTest extends TestCase
     /** @test */
     public function it_can_dispatch_itself_synchronously()
     {
-        $dispatchGroup = new DispatchGroup([new DummyJob], false);
-        $dispatchGroup
-            ->iterate(fn () => Artisan::call('queue:work --once'))
-            ->finally(fn () => Cache::put('finally', 'Done !'))
-            ->dispatch();
+        Queue::fake();
 
-        $this->assertEquals('Done !', Cache::get('finally'));
+        $dispatchGroup = new DispatchGroup([new DummyJob], false);
+
+        $dispatchGroup->dispatch();
+
+        Queue::assertPushed(DummyJob::class);
     }
 
     /** @test */
     public function it_can_dispatch_itself_asynchronously()
     {
+        Queue::fake();
+
         $dispatchGroup = new DispatchGroup([new DummyJob]);
-        $dispatchGroup
-            ->iterate(fn () => Artisan::call('queue:work --once'))
-            ->finally(fn () => Cache::put('finally', 'Done !'))
-            ->dispatch();
+        $dispatchGroup->dispatch();
 
-        Artisan::call('queue:work --once');
-
-        $this->assertEquals('Done !', Cache::get('finally'));
-    }
-
-    /** @test */
-    public function it_can_be_called_asynchronously_using_the_helper_function()
-    {
-        dispatch_group([new DummyJob])
-            ->iterate(fn () => Artisan::call('queue:work --once'))
-            ->then(fn () => Cache::put('success', 'yes :)'))
-            ->dispatch();
-
-        Artisan::call('queue:work --once');
-
-        $this->assertEquals('yes :)', Cache::get('success'));
+        Queue::assertPushed(DispatchGroup::class);
     }
 
     /** @test */
     public function it_can_be_called_synchronously_using_the_helper_function()
     {
-        dispatch_group_now([new DummyJob])
-            ->iterate(fn () => Artisan::call('queue:work --once'))
-            ->then(fn () => Cache::put('success', 'yes :)'))
-            ->dispatch();
+        Queue::fake();
 
-        $this->assertEquals('yes :)', Cache::get('success'));
+        dispatch_group_now([new DummyJob])->dispatch();
+
+        Queue::assertPushed(DummyJob::class);
+    }
+
+    /** @test */
+    public function it_can_be_called_asynchronously_using_the_helper_function()
+    {
+        Queue::fake();
+
+        dispatch_group([new DummyJob])->dispatch();
+
+        Queue::assertPushed(DispatchGroup::class);
     }
 
     protected function getMock()

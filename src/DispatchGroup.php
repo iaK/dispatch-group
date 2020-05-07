@@ -92,14 +92,6 @@ class DispatchGroup implements ShouldQueue
         $this->async = $async;
         $this->redis = $this->getRedisConnection();
         $this->groupQueue = $this->getDefaultQueue();
-
-        $dummyClosure = function () {
-        };
-
-        $this->then($dummyClosure)
-            ->catch($dummyClosure)
-            ->finally($dummyClosure)
-            ->iterate($dummyClosure);
     }
 
     /**
@@ -189,7 +181,9 @@ class DispatchGroup implements ShouldQueue
      */
     protected function runIterateCallback()
     {
-        return ($this->iterateCallback)();
+        if ($this->iterateCallback) {
+            return ($this->iterateCallback->getClosure())();
+        }
     }
 
     /**
@@ -233,7 +227,9 @@ class DispatchGroup implements ShouldQueue
      */
     public function runFailureCallback($failedJobs)
     {
-        return ($this->onFailureCallback)($failedJobs);
+        if ($this->onFailureCallback) {
+            return ($this->onFailureCallback->getClosure())($failedJobs);
+        }
     }
 
     /**
@@ -243,7 +239,9 @@ class DispatchGroup implements ShouldQueue
      */
     public function runSuccessCallback()
     {
-        return ($this->onSuccessCallback)();
+        if ($this->onSuccessCallback) {
+            return ($this->onSuccessCallback->getClosure())();
+        }
     }
 
     /**
@@ -253,7 +251,9 @@ class DispatchGroup implements ShouldQueue
      */
     public function runFinallyCallback()
     {
-        return ($this->finallyCallback)();
+        if ($this->finallyCallback) {
+            return ($this->finallyCallback->getClosure())();
+        }
     }
 
     /**
@@ -274,9 +274,7 @@ class DispatchGroup implements ShouldQueue
      */
     public function then($callback)
     {
-        $this->onSuccessCallback = $this->async
-            ? new SerializableClosure($callback)
-            : $callback;
+        $this->onSuccessCallback = new SerializableClosure($callback);
 
         return $this;
     }
@@ -289,9 +287,7 @@ class DispatchGroup implements ShouldQueue
      */
     public function catch($callback)
     {
-        $this->onFailureCallback = $this->async
-            ? new SerializableClosure($callback)
-            : $callback;
+        $this->onFailureCallback = new SerializableClosure($callback);
 
         return $this;
     }
@@ -304,9 +300,7 @@ class DispatchGroup implements ShouldQueue
      */
     public function finally($callback)
     {
-        $this->finallyCallback = $this->async
-            ? new SerializableClosure($callback)
-            : $callback;
+        $this->finallyCallback = new SerializableClosure($callback);
 
         return $this;
     }
@@ -319,9 +313,7 @@ class DispatchGroup implements ShouldQueue
      */
     public function iterate($callback)
     {
-        $this->iterateCallback = $this->async
-            ? new SerializableClosure($callback)
-            : $callback;
+        $this->iterateCallback = new SerializableClosure($callback);
 
         return $this;
     }

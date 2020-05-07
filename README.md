@@ -15,13 +15,9 @@ dispatch_group([new FirstJob(), new SecondJob()])
 
 ### Compability.
 
-This package only supports the redis queue driver.
-
-It works both with and without Laravel horizon.
+This package works both with and without Laravel horizon, but only supports the redis driver.
 
 Tested with Laravel 7 and php 7.2
-
-Note! This package only makes sense if you have more than 2 workers running (as one worker will run the dispatch_group job, and the other will process the provided jobs).
 
 ### Installation
 
@@ -35,7 +31,7 @@ That's all!
 
 ### Helper functions
 
-Along with the dispatch_now() function mentioned above, theres also a way to run the job in the current process.
+Along with the dispatch_group() function mentioned above, theres also a way to run the job in the current process.
 
 Note! The jobs passed in gets pushed onto the queue, only the monitoring job is ran synchronously.
 
@@ -48,11 +44,14 @@ dispatch_group_now([new FirstJob(), new SecondJob()])
 
 ### API
 
-#### then(Callable $callback)
+The dispatch_group() and dispatch_group_now() functions returns a job, and therefore has the same API any other job (onQueue(), delay(), chain() and so on).
+In addition to those, these methods are also available
+
+#### then(Closure $callback)
 
 Function to call when all jobs completed successfully.
 
-#### catch(Callable $callback)
+#### catch(Closure $callback)
 
 Function call if one or more jobs fails. Gets the failed jobs as a parameter (array) to the callback.
 
@@ -63,17 +62,21 @@ dispatch_group([new FirstJob(), new SecondJob()])
     ->catch(fn ($failedJobs) => /* Do something with the failed jobs */);
 ```
 
-#### finally(Callable $callback)
+#### finally(Closure $callback)
 
 Function to call when all jobs completed, successfully or not.
 
-#### iterate(Callback $callable)
+#### iterate(Closure $callable)
 
 Function that gets called every time we check if all jobs has completed (1 second interval).
 
 #### dispatch()
 
 Dispatch the jobs. This gets called automatically at the end of your script, but if you need to make sure it runs straight away - this is your way :)
+
+#### groupQueue(String $queue)
+
+Same as onQueue(), except this applied to the jobs passed in, while onQueue() applies to the job monitoring the jobs (such meta..).
 
 ### Tests
 

@@ -1,9 +1,14 @@
 {
     "name": "iak/dispatch-group",
-    "description": "Cool stuff",
+    "description": "Run code when a group of queued jobs has completed, successfully or not.",
     "keywords": [
         "iaK",
-        "dispatch-group"
+        "dispatch-group",
+        "laravel",
+        "queues",
+        "queued jobs",
+        "jobs",
+        "dispatch"
     ],
     "homepage": "https://github.com/iak/dispatch-group",
     "license": "MIT",

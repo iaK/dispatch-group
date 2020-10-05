@@ -1,3 +1,8 @@
+# [Warning] deprecated package!
+
+Since this functionality now exists in [Laravels core](https://laravel.com/docs/8.x/queues#job-batching), this package is no longer needed and therefore not maintained. 
+
+
 ## Laravel dispatch-group
 
 Run code when a group of queued jobs has completed, successfully or not.
